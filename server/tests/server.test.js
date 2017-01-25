@@ -81,7 +81,11 @@ describe('GET /todos/id', () => {
                     .expect((res) => {
                         expect(res.body._id).toBe(id);
                     })
-                    .end(done);
+                    .end((err, res) => {
+                        Todo.findByIdAndRemove(id)
+                            .then(() => done())
+                            .catch((e) => done(e));
+                    });
             })
             .catch((e) => console.log(e));
     });
