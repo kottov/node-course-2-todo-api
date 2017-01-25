@@ -19,6 +19,15 @@ app.get('/todos', (req, res) => {
         });
 });
 
+app.get('/todos/:id', (req, res) => {
+    Todo.findById(req.params.id)
+        .then((todo) => {
+            if(!todo) res.send('Todo not found');
+            res.send(todo);
+        })
+        .catch((e) => res.send(e));
+});
+
 app.post('/todos', (req, res) => {
     var todo = new Todo({ text: req.body.text }).save()
         .then((doc) => {

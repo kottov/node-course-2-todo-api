@@ -68,3 +68,21 @@ describe('GET /todos', () => {
             .end(done);
     });
 });
+
+describe('GET /todos/id', () => {
+    it('should get todo by id', (done) => {
+        var id;
+        new Todo({ text: 'Test find by id todo' }).save()
+            .then((todo) => {
+                id = ObjectId(todo._id).toString();
+                request(app)
+                    .get(`/todos/${id}`)
+                    .expect(200)
+                    .expect((res) => {
+                        expect(res.body._id).toBe(id);
+                    })
+                    .end(done);
+            })
+            .catch((e) => console.log(e));
+    });
+});
