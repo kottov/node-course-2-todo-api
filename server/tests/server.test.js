@@ -5,15 +5,21 @@ const { ObjectId } = require('mongoose').Types;
 const { app } = require('../server');
 const { Todo } = require('../models/todo');
 
-const seedTodos = [
-    { text: 'Test todo 1' },
-    { text: 'Test todo 2'}
+const todos = [
+    {
+        _id: new ObjectId(),
+        text: 'Test todo 1'
+    },
+    {
+        _id: new ObjectId(),
+        text: 'Test todo 2'
+    }
 ];
 
 
 beforeEach((done) => {
     Todo.remove()
-        .then(() => Todo.insertMany(seedTodos))
+        .then(() => Todo.insertMany(todos))
         .then(() => done())
         .catch((e) => done(e));
 });
@@ -70,42 +76,27 @@ describe('GET /todos', () => {
 });
 
 describe('GET /todos/id', () => {
-    it('should get todo by id', (done) => {
-        var id;
-        var text = seedTodos[0].text;
-        Todo.findOne({ text })
-            .then((todo) => {
-                var id = todo._id.toString();
-                request(app)
-                    .get(`/todos/${id}`)
-                    .expect(200)
-                    .expect((res) => {
-                        expect(res.body.todo.text).toBe(text);
-                    })
-                    .end(done);
-            })
-            .catch((e) => done(e));
-    });
-
-    it('should get status 404 if id of todo not valid', (done) => {
-        var id = ObjectId() + '123';
+    it('should return todo by id', (done) => {
         request(app)
-            .get(`/todos/${id}`)
-            .expect(404)
+            .get(`/todos/${todos[0]._id.toString()}`)
+            .expect(200)
             .expect((res) => {
-                expect(res.body).toEqual({});
+                expect(res.body.todo.text).toBe(todos[0].text);
             })
             .end(done);
     });
 
-    it('should get status 404 if todo not found', (done) => {
-        var id = ObjectId();
+    it('should get status 404 if id of todo not valid', (done) => {
         request(app)
-            .get(`/todos/${id}`)
+            .get(`/todos/123abc`)
             .expect(404)
-            .expect((res) => {
-                expect(res.body).toEqual({});
-            })
+            .end(done);
+    });
+
+    it('should get status 404 if todo not found', (done) => {
+        request(app)
+            .get(`/todos/${new ObjectId().toString()}`)
+            .expect(404)
             .end(done);
     });
 });
