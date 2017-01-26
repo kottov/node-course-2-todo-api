@@ -72,21 +72,40 @@ describe('GET /todos', () => {
 describe('GET /todos/id', () => {
     it('should get todo by id', (done) => {
         var id;
-        new Todo({ text: 'Test find by id todo' }).save()
+        var text = seedTodos[0].text;
+        Todo.findOne({ text })
             .then((todo) => {
-                id = ObjectId(todo._id).toString();
+                var id = todo._id.toString();
                 request(app)
                     .get(`/todos/${id}`)
                     .expect(200)
                     .expect((res) => {
-                        expect(res.body._id).toBe(id);
+                        expect(res.body.todo.text).toBe(text);
                     })
-                    .end((err, res) => {
-                        Todo.findByIdAndRemove(id)
-                            .then(() => done())
-                            .catch((e) => done(e));
-                    });
+                    .end(done);
             })
-            .catch((e) => console.log(e));
+            .catch((e) => done(e));
+    });
+
+    it('should get status 404 if id of todo not valid', (done) => {
+        var id = ObjectId() + '123';
+        request(app)
+            .get(`/todos/${id}`)
+            .expect(404)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+            })
+            .end(done);
+    });
+
+    it('should get status 404 if todo not found', (done) => {
+        var id = ObjectId();
+        request(app)
+            .get(`/todos/${id}`)
+            .expect(404)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+            })
+            .end(done);
     });
 });
