@@ -98,6 +98,10 @@ app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);
 });
 
+app.get('/salt', (req, res) => {
+    res.send(process.env.SALT_DEEP);
+});
+
 app.listen(port, () => console.log(`Web server started on port ${port}`));
 
 module.exports = { app };
