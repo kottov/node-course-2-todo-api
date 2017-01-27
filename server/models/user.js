@@ -48,6 +48,20 @@ UserSchema.methods.generateAuthToken = function() {
         });
 };
 
+UserSchema.statics.findByCredentials = function(email, password) {
+    var User = this;
+    
+    return User.findOne({email}).then((user) => {
+        return new Promise((resolve, reject) => {
+            if(!user) reject();
+            bcrypt.compare(password, user.password, (err, result) => {
+                if(result) resolve(user);
+                reject();
+            });
+        });
+    });
+};
+
 UserSchema.statics.findByToken = function(token) {
     var User = this;
     var decoded;
