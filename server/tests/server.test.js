@@ -305,3 +305,63 @@ describe('POST /users', () => {
     });
 });
 
+describe('POST /users/login', () => {
+    it('login user and return auth token', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({ email: users[0].email, password: users[0].password })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.email).toBe(users[0].email);
+                expect(res.body._id).toExist();
+            }).end((err, res) => {
+                if(err) return done(err);
+                User.findById(res.body._id).then((user) => {
+                    expect(user).toExist();
+                    expect(user.tokens[user.tokens.length - 1].token).toBe(res.headers['x-auth']);
+                    done();
+                }).catch((e) => {
+                    done(e);
+                });
+            });
+    });
+
+    it('should return 400 if password wrong', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({ email: users[0].email, password: users[0].password + '123' })
+            .expect(400)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+                expect(res.headers['x-auth']).toNotExist();
+            }).end((err, res) => {
+                if(err) return done(err);
+                User.find({ email: users[0].email}).then((users) => {
+                    expect(users[0]).toExist();
+                    expect(users[0].tokens.length).toBe(1);
+                    done();
+                }).catch((e) => {
+                    done(e);
+                });
+            });
+    });
+
+    it('should return 400 if email not found', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({ email: users[0].email + '123', password: users[0].password })
+            .expect(400)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+                expect(res.headers['x-auth']).toNotExist();
+            }).end((err, res) => {
+                if(err) return done(err);
+                User.find({ email: users[0].email + '123'}).then((users) => {
+                    expect(users[0]).toNotExist();
+                    done();
+                }).catch((e) => {
+                    done(e);
+                });
+            });
+    });
+});
