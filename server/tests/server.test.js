@@ -287,7 +287,7 @@ describe('POST /users', () => {
             .send({ email, password })
             .expect(200)
             .expect((res) => {
-                token = jwt.sign({ _id: res.body._id, access: 'auth' }, 'abc123').toString();
+                token = jwt.sign({ _id: res.body._id, access: 'auth' }, process.env.JWT_SECRET).toString();
                 expect(res.headers['x-auth']).toBe(token);
                 expect(res.body.email).toBe(email);
                 expect(res.body._id).toExist();
