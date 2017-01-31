@@ -365,3 +365,41 @@ describe('POST /users/login', () => {
             });
     });
 });
+
+describe('DELETE /users/me/token', () => {
+    it('should delete token if user log out', (done) => {
+        request(app)
+            .delete('/users/me/token')
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+                expect(res.headers['x-auth']).toNotExist();
+            }).end((err, res) => {
+                if(err) return done();
+                User.findById(users[0]._id)
+                    .then((user) => {
+                        expect(user.tokens.length).toBe(0);
+                        done();
+                    }).catch((e) => {
+                        done(e);
+                    });
+            });
+    });
+
+    it('should return 401 if user not authenticated', (done) => {
+        request(app)
+            .delete('/users/me/token')
+            .set('x-auth', users[0].tokens[0].token + '123')
+            .expect(401)
+            .end((err, res) => {
+                if(err) return done();
+                User.findById(users[0]._id).then((user) => {
+                    expect(user.tokens.length).toBe(1);
+                    done();
+                }).catch((e) => {
+                    done(e);
+                });
+            });
+    });
+});
